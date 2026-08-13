@@ -19,6 +19,7 @@ Most of these are the kind of problem you only hit once you try to instrument a 
 - **[A TinyCC/arm64 codegen bug that corrupts return addresses in CModule hooks](https://gist.github.com/wenroudeyu-collab/69b4dc0df4939978edf29a2b635edb40)** — a wild write from internal-static addressing in JIT'd hook code, chased down to a SIGBUS on `RET` and fixed by moving all mutable state to `extern` + allocated pointers.
 - **[Verifying hooks on a stripped native crypto library with a self-built oracle](https://gist.github.com/wenroudeyu-collab/cb3152478194019dc978a0fb1565cead)** — cross-compile the same library, `dlopen` it, and drive known-answer tests, to prove a symbol-less hook reads the right arguments before trusting it on live traffic.
 - **[Capturing SQLite result rows from a live app at full speed](https://gist.github.com/wenroudeyu-collab/767fbdedf66ba374a8bc56aa50cc7109)** — a C-only `sqlite3_step` hook that reads typed columns inside the callback, preserves 64-bit precision (raw bytes + BigInt), and never takes the JS lock.
+- **[Decrypting an iOS app's HTTP/3 in Wireshark without putting anything inside the app](https://gist.github.com/wenroudeyu-collab/48c9bc126b56a9a1c217c638f09ac596)** — a frida-free QUIC capture: hardware-breakpoint the shared-cache `sendto`/`recvfrom` for the ciphertext and the keylog derivation point for the TLS secrets, then synthesize one pcapng whose embedded Decryption Secrets Block makes Wireshark decrypt it on open.
 
 ## Focus
 
