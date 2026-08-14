@@ -2,7 +2,7 @@
 
 **Independent security researcher.** Field notes from building a dynamic-analysis toolchain for iOS (arm64) — hooking, capturing, and reproducing app behavior on my own jailbroken devices.
 
-Most of these are the kind of problem you only hit once you try to instrument a *real*, hardened app at full speed without freezing it: where the trampoline itself is the bottleneck, where the JIT miscompiles your hook, where the right bytes are one context-switch too far away.
+Most of these are the kind of problem you only hit once you try to instrument a *real*, hardened app at full speed without freezing it: where the trampoline itself is the bottleneck, where the JIT miscompiles your hook, where the right bytes are one context-switch too far away, where the app kills itself the moment it feels a breakpoint.
 
 ## Writeups
 
@@ -21,9 +21,14 @@ Most of these are the kind of problem you only hit once you try to instrument a 
 - **[Capturing SQLite result rows from a live app at full speed](https://gist.github.com/wenroudeyu-collab/767fbdedf66ba374a8bc56aa50cc7109)** — a C-only `sqlite3_step` hook that reads typed columns inside the callback, preserves 64-bit precision (raw bytes + BigInt), and never takes the JS lock.
 - **[Decrypting an iOS app's HTTP/3 in Wireshark without putting anything inside the app](https://gist.github.com/wenroudeyu-collab/48c9bc126b56a9a1c217c638f09ac596)** — a frida-free QUIC capture: hardware-breakpoint the shared-cache `sendto`/`recvfrom` for the ciphertext and the keylog derivation point for the TLS secrets, then synthesize one pcapng whose embedded Decryption Secrets Block makes Wireshark decrypt it on open.
 
+### Stealth &amp; anti-detection
+*Instrumenting an app that's actively looking for you.*
+
+- **[It wasn't the injection: what makes a hardened iOS app self-destruct at launch](https://gist.github.com/wenroudeyu-collab/aa197a3983f3a63387edeb430e9c1251)** — a controlled experiment: spawn the app suspended, scrub the injected dylib from its memory so it runs clean, then toggle a single hardware breakpoint. The breakpoint alone flips survival — so the tell isn't the injection, it's a self-readable `ARM_DEBUG_STATE64`. A one-shot startup scan and a continuous new-thread sweep turn out to need two different evasions (delay the arm; don't arm new threads).
+
 ## Focus
 
-Frida internals · CModule / TinyCC codegen · out-of-process kernel hooks (HW/BRK, Mach exception ports) · iOS crypto &amp; TLS instrumentation · capture → analysis → replay pipelines.
+Frida internals · CModule / TinyCC codegen · out-of-process kernel hooks (HW/BRK, Mach exception ports) · iOS crypto &amp; TLS instrumentation · capture → analysis → replay pipelines · anti-debug / anti-tamper detection surfaces.
 
 ---
 
