@@ -29,9 +29,14 @@ Most of these are the kind of problem you only hit once you try to instrument a 
 - **[It wasn't the injection: what makes a hardened iOS app self-destruct at launch](https://gist.github.com/wenroudeyu-collab/aa197a3983f3a63387edeb430e9c1251)** — a controlled experiment: spawn the app suspended, scrub the injected dylib from its memory so it runs clean, then toggle a single hardware breakpoint. The breakpoint alone flips survival — so the tell isn't the injection, it's a self-readable `ARM_DEBUG_STATE64`. A one-shot startup scan and a continuous new-thread sweep turn out to need two different evasions (delay the arm; don't arm new threads).
 - **[Hooking a function by rewriting a pointer, not its code](https://gist.github.com/wenroudeyu-collab/d972809b45038bd9c7c831ab79a794e6)** — `__DATA_CONST` GOT rebinding: redirect a call through its pointer slot to an injected trampoline, changing no code and setting no breakpoint, so "die-on-hit" apps have nothing to feel. Find the slot by **value**, not name — chained fixups break name-based rebinders like fishhook. It survives the debug-register app, but a GOT-integrity check (IOSSecuritySuite's FishHookChecker) still catches the rebound pointer — which is what pushes the honest fix down to the kernel VFS layer.
 
+### Offline &amp; static analysis
+*Reading the binaries without running them.*
+
+- **[Reading the dyld shared cache offline](https://gist.github.com/wenroudeyu-collab/14bfafd6f5f9a7300029ad4dd45aaa45)** — the container that holds every system library: parse it as a container, not a Mach-O; union the post-iOS-15 subcache mappings into one address space; walk the export trie **and** the separate local-symbols subcache for names; and for the functions that have no name at all, fall back to masked byte-pattern signatures (an offline BoringSecretHunter). Every result pinned to the cache UUID.
+
 ## Focus
 
-Frida internals · CModule / TinyCC codegen · out-of-process kernel hooks (HW/BRK, Mach exception ports) · iOS crypto &amp; TLS instrumentation · capture → analysis → replay pipelines · anti-debug / anti-tamper detection surfaces.
+Frida internals · CModule / TinyCC codegen · out-of-process kernel hooks (HW/BRK, Mach exception ports) · iOS crypto &amp; TLS instrumentation · capture → analysis → replay pipelines · anti-debug / anti-tamper detection surfaces · dyld shared cache &amp; offline static analysis.
 
 ---
 
